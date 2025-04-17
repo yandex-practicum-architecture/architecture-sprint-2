@@ -8,7 +8,7 @@
 .\mongo-sharding>docker compose up -d
 ```
 
-2. Настройка:
+2. Настройка Mongodb:
 
 ```shell
 .\mongo-sharding>docker compose exec -T router01 mongosh
@@ -305,7 +305,7 @@ GET http://localhost:8080/helloDoc/users
 }
 ```
 
-17. Количество эелментов в коллекции пользователей, endpoint:
+17. Количество элементов в коллекции пользователей, endpoint:
 
 GET http://localhost:8080/helloDoc/count
 

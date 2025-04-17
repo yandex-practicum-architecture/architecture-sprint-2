@@ -306,7 +306,7 @@ GET http://localhost:8080/
 }
 ```
 
-17. Количество эелментов в коллекции пользователей, endpoint:
+17. Количество элементов в коллекции пользователей, endpoint:
 
 	GET http://localhost:8080/helloDoc/count
 
