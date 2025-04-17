@@ -100,34 +100,42 @@
 
 Итоговое описание решений заданий 2, 3, 4, настройки и запуска приложения см. ниже:
 
-***Эта инструкция описывает шаги по развертыванию и настройке приложения ```pymongo-api``` c шардированным кластером MongoDB 
-и кешированием на основе Redis с использованием Docker Compose.***
+*** Инструкция ***
+    
+    Эта инструкция описывает шаги по развертыванию и настройке приложения ```pymongo-api``` c шардированным кластером MongoDB 
+    и кешированием на основе Redis с использованием Docker Compose.
 
 **Предварительные требования**
 
 •   Установленный Docker и Docker Compose.
 
-1.  **Сборка образов Docker:**
+**1. Сборка образов Docker:**
 
     Перейдите в директорию, содержащую файл `compose.yaml` (`.\sharding-repl-cache`) и выполните команду:
 
-```bash docker compose build```
+```bash
+docker compose build
+```
 
     Эта команда соберет образы Docker, определенные в файле `compose.yaml`.
 
-2. **Запуск кластера:**
+**2. Запуск кластера:**
 
     Выполните команду:
 
-```bash docker compose up -d```
+```bash 
+docker compose up -d
+```
 
     Эта команда запустит все сервисы, определенные в файле `compose.yaml`, в detached режиме (в фоновом режиме).
 
-3. Подключение к роутеру (mongos):
+**3. Подключение к роутеру (mongos):**
 
   Выполните команду:
 
-```bash docker compose exec -T router01 mongosh```
+```bash
+docker compose exec -T router01 mongosh
+```
 
     Эта команда подключится к роутеру MongoDB (router01) с использованием mongosh. Опция -T отключает выделение псевдотерминала.
   
@@ -135,7 +143,8 @@
 
     Пример вывода:
 
-```Current Mongosh Log ID: 67fd3e2415215a3c276b140a
+```
+  Current Mongosh Log ID: 67fd3e2415215a3c276b140a
   Connecting to:     mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
   Using MongoDB:     8.0.6
   Using Mongosh:     2.4.2
@@ -146,19 +155,23 @@
     The server generated these startup warnings when booting
     2025-04-14T16:48:44.997+00:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
     2025-04-14T16:48:44.997+00:00: You are running this process as the root user, which is not recommended
-  ------```
+  ------
+```
 
-4. Включение шардирования и шардирование коллекции (опционально, если это не сделано автоматически):
+**4. Включение шардирования и шардирование коллекции (опционально, если это не сделано автоматически):**
 
     После подключения к mongosh выполните следующие команды:
 
         •  Включение шардирования для базы данных:
 
-```javascript sh.enableSharding("somedb");```
+```javascript
+sh.enableSharding("somedb");
+```
 
     Пример ответа:
 
-```json {
+```json
+{
     ok: 1,
     '$clusterTime': {
         clusterTime: Timestamp({ t: 1744649792, i: 8 }),
@@ -168,15 +181,19 @@
         }
     },
     operationTime: Timestamp({ t: 1744649792, i: 5 })
-}```
+}
+```
 
         •  Шардирование коллекции helloDoc:
 
-```javascript sh.shardCollection("somedb.helloDoc", { "name" : "hashed" });```
+```javascript
+sh.shardCollection("somedb.helloDoc", { "name" : "hashed" });
+```
 
     Пример ответа:
 
-```json {
+```json 
+{
     collectionsharded: 'somedb.helloDoc',
     ok: 1,
     '$clusterTime': {
@@ -187,90 +204,119 @@
         }
     },
     operationTime: Timestamp({ t: 1744649799, i: 46 })
-}```
+}
+```
 
     Важно: Если вы запускаете эту инструкцию на уже сконфигурированном кластере, пропустите этот шаг, или убедитесь что вы знаете что делаете, т.к. повторное включение может привести к ошибкам.
 
-5. Вставка данных (опционально, если в кластере нет данных):
+**5. Вставка данных (опционально, если в кластере нет данных):**
 
   •  Переключитесь на базу данных somedb:
 
-```javascript use somedb;```
+```javascript
+use somedb;
+```
 
  •  Вставьте 1000 документов в коллекцию helloDoc:
 
-```javascript for(var i = 0; i < 1000; i++) db.helloDoc.insertOne({age:i, name:"ly"+i})```
+```javascript
+for(var i = 0; i < 1000; i++) db.helloDoc.insertOne({age:i, name:"ly"+i})
+```
 
     Обратите внимание, что в зависимости от шардирования, документы будут распределены по разным шардам.
 
   •  Выйдите из mongosh:
 
-```javascript exit```
+```javascript
+exit
+```
 
-6. Проверка распределения данных (опционально):
+**6. Проверка распределения данных (опционально):**
 
   •  Подключитесь к одному из шардов напрямую (например, shard-01-node-a):
 
-```bash docker exec -it shard-01-node-a mongosh --port 27017```
+```bash
+docker exec -it shard-01-node-a mongosh --port 27017
+```
 
   •  Переключитесь на базу данных somedb:
 
-```javascript use somedb;```
+```javascript
+use somedb;
+```
 
   •  Подсчитайте количество документов в коллекции helloDoc:
 
-```javascript db.helloDoc.countDocuments();```
+```javascript
+db.helloDoc.countDocuments();
+```
 
     Пример ответа:
 
-```492```
+```
+492
+```
 
     Результат, отличный от 1000, показывает, что данные были распределены по разным шардам.
 
   •  Выйдите из mongosh:
 
-```javascript exit```
+```javascript
+exit
+```
 
   •  Повторите подключение и проверку для других шардов, чтобы убедиться, что данные распределены.
 
-7. Подключение ко второму шарду (пример):
+**7. Подключение ко второму шарду (пример):**
 
   Выполните команду:
 
-```bash docker exec -it shard-02-node-a mongosh --port 27017```
+```bash
+docker exec -it shard-02-node-a mongosh --port 27017
+```
 
   И повторите проверку из пункта 6, для второго шарда, что бы убедится что данные распределены.
 
-```javascript use somedb;```
+```javascript
+use somedb;
+```
 
-```javascript db.helloDoc.countDocuments();```
+```javascript
+db.helloDoc.countDocuments();
+```
 
     Пример ответа:
 
-```508```
+```
+508
+```
 
-## Как проверить
+***Как проверить***
 
-### Если вы запускаете проект на локальной машине
+**Если вы запускаете проект на локальной машине**
 
 Откройте в браузере http://localhost:8080
 
-### Если вы запускаете проект на предоставленной виртуальной машине
+**Если вы запускаете проект на предоставленной виртуальной машине**
 
 Узнать белый ip виртуальной машины
 
-```shell curl --silent http://ifconfig.me```
+```shell
+curl --silent http://ifconfig.me
+```
 
-Откройте в браузере http://<ip виртуальной машины>:8080
+Откройте в браузере `http://<ip виртуальной машины>:8080`
 
-## Доступные эндпоинты
+**Доступные эндпоинты**
 
 Список доступных эндпоинтов, swagger http://<ip виртуальной машины>:8080/docs
 
 Примеры ответов:
 
 1. GET http://localhost:8080/
-```{
+
+```
+{
   "mongo_topology_type": "Sharded",
   "mongo_replicaset_name": null,
   "mongo_db": "somedb",
@@ -298,7 +344,8 @@
   },
   "cache_enabled": true,
   "status": "OK"
-}```
+}
+```
 
 2. GET http://localhost:8080/docs
 
