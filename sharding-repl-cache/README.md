@@ -1,14 +1,21 @@
 1. Запуск приложения:
 
+```shell
 .\mongo-sharding-repl>docker compose build
+```
 
+```shell
 .\mongo-sharding-repl>docker compose up -d
+```
 
 2. Настройка:
 
+```shell
 .\mongo-sharding-repl>docker compose exec -T router01 mongosh
+```
 
 Вывод:
+```shell
 		Current Mongosh Log ID: 67fd3e2415215a3c276b140a
 		Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
 		Using MongoDB:          8.0.6
@@ -21,22 +28,31 @@
 		   2025-04-14T16:48:44.997+00:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
 		   2025-04-14T16:48:44.997+00:00: You are running this process as the root user, which is not recommended
 		------
+```
 
 3. Дополнительно можно проверить (описано в compose.yaml 
 и настраивается в скриптах запуска , 
 см. каталог scripts):
 
+```shell
 [direct: mongos] test> sh.addShard("rs-shard-01/shard-01-node-a:27017");
 		MongoServerError[IllegalOperation]: A shard named rs-shard-01 containing the replica set 'rs-shard-01' already exists
-		
+```
+
+```shell
 [direct: mongos] test> sh.addShard("rs-shard-02/shard-02-node-a:27017");
 		MongoServerError[IllegalOperation]: A shard named rs-shard-02 containing the replica set 'rs-shard-02' already exists
+```
 
 4. Включаем шардирование:
 
+```shell
 [direct: mongos] test> sh.enableSharding("somedb");
+```
 
 Вывод:
+
+```shell
 		{
 		  ok: 1,
 		  '$clusterTime': {
@@ -48,12 +64,17 @@
 		  },
 		  operationTime: Timestamp({ t: 1744649792, i: 5 })
 		}
+```
 
 5. Настраиваем шардирование коллекции:
 
+```shell
 [direct: mongos] test> sh.shardCollection("somedb.helloDoc", { "name" : "hashed" });
+```
 
 Вывод:
+
+```shell
 		{
 		  collectionsharded: 'somedb.helloDoc',
 		  ok: 1,
@@ -66,31 +87,44 @@
 		  },
 		  operationTime: Timestamp({ t: 1744649799, i: 46 })
 		}
+```
 
 6. Перключаемся на бд somedb и добавляем данные:
 
+```shell
 [direct: mongos] test> use somedb;
+```
 
 Вывод:
-		switched to db somedb
+```switched to db somedb```
 
+```shell
 [direct: mongos] somedb> for(var i = 0; i < 1000; i++) db.helloDoc.insertOne({age:i, name:"ly"+i})
+```
 
 Вывод:
+```shell
 		{
 		  acknowledged: true,
 		  insertedId: ObjectId('67fd3e8315215a3c276b17f2')
 		}
+```
 
 7. Завершаем сессию работы с бд:
 
+```shell
 [direct: mongos] somedb> exit
+```
 
 8. Заходим в консоль первого шарда для проверки состояния:
 
+```shell
 .\mongo-sharding-repl>docker exec -it shard-01-node-a mongosh --port 27017
+```
 
 Вывод:
+
+```shell
 		Current Mongosh Log ID: 67fd3e98b9099f5f886b140a
 		Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
 		Using MongoDB:          8.0.6
@@ -112,28 +146,39 @@
 		   2025-04-14T16:48:22.301+00:00: vm.max_map_count is too low
 		   2025-04-14T16:48:22.301+00:00: We suggest setting swappiness to 0 or 1, as swapping can cause performance problems.
 		------
+```
 
 9. Переключаемся на соответствующую бд и проверяем количество элементов в шарде:
 
+```shell
 rs-shard-01 [direct: primary] test> use somedb;
+```
 
 Вывод:
-		switched to db somedb
+```switched to db somedb```
 
+```shell
 rs-shard-01 [direct: primary] somedb> db.helloDoc.countDocuments();
+```
 
 Вывод:
-		492
+```492```
 
 10. Завершаем сессию работы с бд:
 
+```shell
 rs-shard-01 [direct: primary] somedb> exit
+```
 
 11. Аналогично для второго шарда, заходим в консоль:
 
+```shell
 .\mongo-sharding-repl>docker exec -it shard-02-node-a mongosh --port 27017
+```
 
 Вывод:
+
+```shell
 		Current Mongosh Log ID: 67fd3eb47c71d3f1ea6b140a
 		Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
 		Using MongoDB:          8.0.6
@@ -155,27 +200,37 @@ rs-shard-01 [direct: primary] somedb> exit
 		   2025-04-14T16:48:19.256+00:00: vm.max_map_count is too low
 		   2025-04-14T16:48:19.256+00:00: We suggest setting swappiness to 0 or 1, as swapping can cause performance problems.
 		------
+```
 
 12. Переключаемся на соответствующую бд и проверяем количество элементов в шарде:
 
+```shell
 rs-shard-02 [direct: secondary] test> use somedb;
+```
 
 Вывод:
-		switched to db somedb
+```switched to db somedb```
 
+```shell
 rs-shard-02 [direct: secondary] somedb> db.helloDoc.countDocuments();
+```
 
 Вывод:
-		508
+```508```
 
 13. Завершаем сессию работы с бд:
+
+```shell
 rs-shard-02 [direct: secondary] somedb> exit
+```
 
 14. Проверяем работу endpoints, конфигурация:
 
 GET http://localhost:8080/
 
 Вывод:
+
+```shell
 		{
 		  "mongo_topology_type": "Sharded",
 		  "mongo_replicaset_name": null,
@@ -205,14 +260,17 @@ GET http://localhost:8080/
 		  "cache_enabled": false,
 		  "status": "OK"
 		}
+```
 
 15. Swagger API:
 	GET http://localhost:8080/docs
 
 16. Коллекция пользователей, endpoint:
+
 GET http://localhost:8080/helloDoc/users
 
 Вывод:
+```shell
 		{
 		  "users": [
 			{
@@ -249,20 +307,25 @@ GET http://localhost:8080/helloDoc/users
 			}
 		  ]
 		}
+```
 
 17. Количество эелментов в коллекции пользователей, endpoint:
 
 GET http://localhost:8080/helloDoc/count
 
 Вывод:
+```shell
 		{
 		  "status": "OK",
 		  "mongo_db": "somedb",
 		  "items_count": 1000
 		}
+```
 
 18. Завершаем работу приложения:
 
+```shell
 .\mongo-sharding-repl>docker compose down
+```
 
 19. Так как настроено и включено кеширование Redis, повторные запросы выполняются многократно быстрее.
