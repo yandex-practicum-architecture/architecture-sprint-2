@@ -100,10 +100,10 @@
 
 Итоговое описание решений заданий 2, 3, 4, настройки и запуска приложения см. ниже:
 
-# Эта инструкция описывает шаги по развертыванию и настройке приложения ```pymongo-api``` c шардированным кластером MongoDB 
-и кешированием на основе Redis с использованием Docker Compose.
+***Эта инструкция описывает шаги по развертыванию и настройке приложения ```pymongo-api``` c шардированным кластером MongoDB 
+и кешированием на основе Redis с использованием Docker Compose.***
 
-## Предварительные требования
+**Предварительные требования**
 
 •   Установленный Docker и Docker Compose.
 
@@ -111,8 +111,7 @@
 
     Перейдите в директорию, содержащую файл `compose.yaml` (`.\sharding-repl-cache`) и выполните команду:
 
-```bash
-docker compose build```
+```bash docker compose build```
 
     Эта команда соберет образы Docker, определенные в файле `compose.yaml`.
 
@@ -120,8 +119,7 @@ docker compose build```
 
     Выполните команду:
 
-```bash
-docker compose up -d```
+```bash docker compose up -d```
 
     Эта команда запустит все сервисы, определенные в файле `compose.yaml`, в detached режиме (в фоновом режиме).
 
@@ -129,8 +127,7 @@ docker compose up -d```
 
   Выполните команду:
 
-bash
-  docker compose exec -T router01 mongosh
+```bash docker compose exec -T router01 mongosh```
 
     Эта команда подключится к роутеру MongoDB (router01) с использованием mongosh. Опция -T отключает выделение псевдотерминала.
   
@@ -138,7 +135,7 @@ bash
 
     Пример вывода:
 
-Current Mongosh Log ID: 67fd3e2415215a3c276b140a
+```Current Mongosh Log ID: 67fd3e2415215a3c276b140a
   Connecting to:     mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
   Using MongoDB:     8.0.6
   Using Mongosh:     2.4.2
@@ -149,7 +146,7 @@ Current Mongosh Log ID: 67fd3e2415215a3c276b140a
     The server generated these startup warnings when booting
     2025-04-14T16:48:44.997+00:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
     2025-04-14T16:48:44.997+00:00: You are running this process as the root user, which is not recommended
-  ------
+  ------```
 
 4. Включение шардирования и шардирование коллекции (опционально, если это не сделано автоматически):
 
@@ -157,13 +154,11 @@ Current Mongosh Log ID: 67fd3e2415215a3c276b140a
 
         •  Включение шардирования для базы данных:
 
-javascript
-    sh.enableSharding("somedb");
+```javascript sh.enableSharding("somedb");```
 
     Пример ответа:
 
-json
-{
+```json {
     ok: 1,
     '$clusterTime': {
         clusterTime: Timestamp({ t: 1744649792, i: 8 }),
@@ -173,17 +168,15 @@ json
         }
     },
     operationTime: Timestamp({ t: 1744649792, i: 5 })
-}
+}```
 
         •  Шардирование коллекции helloDoc:
 
-javascript
-    sh.shardCollection("somedb.helloDoc", { "name" : "hashed" });
+```javascript sh.shardCollection("somedb.helloDoc", { "name" : "hashed" });```
 
     Пример ответа:
 
-json
-{
+```json {
     collectionsharded: 'somedb.helloDoc',
     ok: 1,
     '$clusterTime': {
@@ -194,7 +187,7 @@ json
         }
     },
     operationTime: Timestamp({ t: 1744649799, i: 46 })
-}
+}```
 
     Важно: Если вы запускаете эту инструкцию на уже сконфигурированном кластере, пропустите этот шаг, или убедитесь что вы знаете что делаете, т.к. повторное включение может привести к ошибкам.
 
@@ -202,48 +195,41 @@ json
 
   •  Переключитесь на базу данных somedb:
 
-javascript
-    use somedb;
+```javascript use somedb;```
 
  •  Вставьте 1000 документов в коллекцию helloDoc:
 
-javascript
-    for(var i = 0; i < 1000; i++) db.helloDoc.insertOne({age:i, name:"ly"+i})
+```javascript for(var i = 0; i < 1000; i++) db.helloDoc.insertOne({age:i, name:"ly"+i})```
 
     Обратите внимание, что в зависимости от шардирования, документы будут распределены по разным шардам.
 
   •  Выйдите из mongosh:
 
-javascript
-    exit
+```javascript exit```
 
 6. Проверка распределения данных (опционально):
 
   •  Подключитесь к одному из шардов напрямую (например, shard-01-node-a):
 
-bash
-    docker exec -it shard-01-node-a mongosh --port 27017
+```bash docker exec -it shard-01-node-a mongosh --port 27017```
 
   •  Переключитесь на базу данных somedb:
 
-javascript
-    use somedb;
+```javascript use somedb;```
 
   •  Подсчитайте количество документов в коллекции helloDoc:
 
-javascript
-    db.helloDoc.countDocuments();
+```javascript db.helloDoc.countDocuments();```
 
     Пример ответа:
 
-492
+```492```
 
     Результат, отличный от 1000, показывает, что данные были распределены по разным шардам.
 
   •  Выйдите из mongosh:
 
-javascript
-    exit
+```javascript exit```
 
   •  Повторите подключение и проверку для других шардов, чтобы убедиться, что данные распределены.
 
@@ -251,20 +237,17 @@ javascript
 
   Выполните команду:
 
-bash
-  docker exec -it shard-02-node-a mongosh --port 27017
+```bash docker exec -it shard-02-node-a mongosh --port 27017```
 
   И повторите проверку из пункта 6, для второго шарда, что бы убедится что данные распределены.
 
-javascript
-    use somedb;
+```javascript use somedb;```
 
-javascript
-    db.helloDoc.countDocuments();
+```javascript db.helloDoc.countDocuments();```
 
     Пример ответа:
 
-508
+```508```
 
 ## Как проверить
 
@@ -276,9 +259,7 @@ javascript
 
 Узнать белый ip виртуальной машины
 
-```shell
-curl --silent http://ifconfig.me
-```
+```shell curl --silent http://ifconfig.me```
 
 Откройте в браузере http://<ip виртуальной машины>:8080
 
@@ -289,7 +270,7 @@ curl --silent http://ifconfig.me
 Примеры ответов:
 
 1. GET http://localhost:8080/
-{
+```{
   "mongo_topology_type": "Sharded",
   "mongo_replicaset_name": null,
   "mongo_db": "somedb",
@@ -317,7 +298,7 @@ curl --silent http://ifconfig.me
   },
   "cache_enabled": true,
   "status": "OK"
-}
+}```
 
 2. GET http://localhost:8080/docs
 
@@ -325,6 +306,7 @@ curl --silent http://ifconfig.me
 
 3. GET http://localhost:8080/helloDoc/users
 
+```
 {
   "users": [
     {
@@ -361,11 +343,14 @@ curl --silent http://ifconfig.me
     }
   ]
 }
+```
 
 4. GET http://localhost:8080/helloDoc/count
 
+```
 {
   "status": "OK",
   "mongo_db": "somedb",
   "items_count": 1000
 }
+```
