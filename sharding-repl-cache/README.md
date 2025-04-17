@@ -8,7 +8,7 @@
 .\mongo-sharding-repl>docker compose up -d
 ```
 
-2. Настройка:
+2. Настройка Mongodb:
 
 ```shell
 .\mongo-sharding-repl>docker compose exec -T router01 mongosh
