@@ -100,8 +100,9 @@
 
 Перейдите в директорию, содержащую файл `compose.yaml` (например, `.\sharding-repl-cache`) и выполните команду:
 
-```bash
-docker compose build```
+```shell
+docker compose build
+```
 
 Эта команда соберет образы Docker, определенные в файле compose.yaml.
 
@@ -109,8 +110,9 @@ docker compose build```
 
 Выполните команду:
 
-```bash
-docker compose up -d```
+```shell
+docker compose up -d
+```
 
 Эта команда запустит все сервисы, определенные в файле compose.yaml, в detached режиме (в фоновом режиме).
 
@@ -118,8 +120,9 @@ docker compose up -d```
 
 Выполните команду:
 
-```bash
-docker compose exec -T router01 mongosh```
+```shell
+docker compose exec -T router01 mongosh
+```
 
 Эта команда подключится к роутеру MongoDB (router01) с использованием mongosh. Опция -T отключает выделение псевдотерминала.
 
@@ -127,7 +130,7 @@ docker compose exec -T router01 mongosh```
 
 Пример вывода:
 
-```
+```shell
 Current Mongosh Log ID: 67fd3e2415215a3c276b140a
 Connecting to:     mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
 Using MongoDB:     8.0.6
@@ -148,11 +151,12 @@ For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
 
 - Включение шардирования для базы данных:
 
-```javascript
-sh.enableSharding("somedb");```
+```shell
+sh.enableSharding("somedb");
+```
 
 Пример ответа:
-```json
+```shell
 {
     ok: 1,
     '$clusterTime': {
@@ -168,12 +172,13 @@ sh.enableSharding("somedb");```
 
 - Шардирование коллекции helloDoc:
 
-```javascript
-sh.shardCollection("somedb.helloDoc", { "name" : "hashed" });```
+```shell
+sh.shardCollection("somedb.helloDoc", { "name" : "hashed" });
+```
 
 Пример ответа:
 
-```json
+```shell
 {
     collectionsharded: 'somedb.helloDoc',
     ok: 1,
@@ -193,42 +198,56 @@ sh.shardCollection("somedb.helloDoc", { "name" : "hashed" });```
 
 - Переключитесь на базу данных somedb:
 
-```use somedb;```
+```shell
+use somedb;
+```
 
 - Вставьте 1000 документов в коллекцию helloDoc:
 
-```javascript
-for(var i = 0; i < 1000; i++) db.helloDoc.insertOne({age:i, name:"ly"+i})```
+```shell
+for(var i = 0; i < 1000; i++) db.helloDoc.insertOne({age:i, name:"ly"+i})
+```
 
 Обратите внимание, что в зависимости от шардирования, документы будут распределены по разным шардам.
 
 - Выйдите из mongosh:
 
-```exit```
+```shell
+exit
+```
 
 6. Проверка распределения данных (опционально)
 
 - Подключитесь к одному из шардов напрямую (например, shard-01-node-a):
 
-```bash
-docker exec -it shard-01-node-a mongosh --port 27017```
+```shell
+docker exec -it shard-01-node-a mongosh --port 27017
+```
 
 - Переключитесь на базу данных somedb:
 
-```use somedb;```
+```shell
+use somedb;
+```
 
 - Подсчитайте количество документов в коллекции helloDoc:
 
-```javascript
-db.helloDoc.countDocuments();```
+```shell
+db.helloDoc.countDocuments();
+```
 
-Пример ответа: ```492```
+Пример ответа: 
+```shell
+492
+```
 
 Результат, отличный от 1000, показывает, что данные были распределены по разным шардам.
 
 - Выйдите из mongosh:
 
-```exit```
+```shell
+exit
+```
 
 - Повторите подключение и проверку для других шардов, чтобы убедиться, что данные распределены.
 
@@ -236,14 +255,19 @@ db.helloDoc.countDocuments();```
 
 Выполните команду:
 
-```bash
-docker exec -it shard-02-node-a mongosh --port 27017```
+```shell
+docker exec -it shard-02-node-a mongosh --port 27017
+```
 
 И повторите проверку из пункта 6 для второго шарда, чтобы убедиться, что данные распределены.
 
-```use somedb;```
+```shell
+use somedb;
+```
 
-```db.helloDoc.countDocuments();```
+```shell
+db.helloDoc.countDocuments();
+```
 
 Пример ответа: ```508```
 
@@ -257,8 +281,9 @@ docker exec -it shard-02-node-a mongosh --port 27017```
 
 1. Узнайте белый IP виртуальной машины:
 
-   ```bash
+```shell
    curl --silent http://ifconfig.me
+```
 
 2. Откройте в браузере: http://<ip виртуальной машины>:8080
 
@@ -270,7 +295,7 @@ docker exec -it shard-02-node-a mongosh --port 27017```
 
 1. запрос GET на http://localhost:8080/
 
-```json
+```shell
 {
   "mongo_topology_type": "Sharded",
   "mongo_replicaset_name": null,
@@ -301,7 +326,8 @@ docker exec -it shard-02-node-a mongosh --port 27017```
   },
   "cache_enabled": true,
   "status": "OK"
-}```
+}
+```
 
 2. запрос GET на http://localhost:8080/docs
 
@@ -309,7 +335,7 @@ docker exec -it shard-02-node-a mongosh --port 27017```
 
 3. запрос GET на http://localhost:8080/helloDoc/users
 
-```json
+```shell
 {
   "users": [
     {
@@ -344,13 +370,15 @@ docker exec -it shard-02-node-a mongosh --port 27017```
       "name": "ly999"
     }
   ]
-}```
+}
+```
 
 4. запрос GET на http://localhost:8080/helloDoc/count
 
-```json
+```shell
 {
   "status": "OK",
   "mongo_db": "somedb",
   "items_count": 1000
-}```
+}
+```
